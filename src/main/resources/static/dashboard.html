@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prime Source ATS Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #6366f1;
+      --danger: #ef4444;
+      --danger-dark: #dc2626;
+      --success: #10b981;
+      --success-dark: #059669;
+      --warning: #f59e0b;
+      --warning-dark: #d97706;
+      --info: #3b82f6;
+      --info-dark: #2563eb;
+      --secondary: #6c757d;
+      --secondary-dark: #5a6268;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navigation */
+    nav {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .logo i {
+      font-size: 1.5rem;
+    }
+
+    .user-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .admin-badge {
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    .recruiter-badge {
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .logout-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .header {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .dashboard-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      border-left: 4px solid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(79, 70, 229, 0.01) 100%);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .dashboard-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.25rem;
+    }
+
+    .dashboard-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .dashboard-card p {
+      color: var(--text-light);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .card-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+      background-color: rgba(79, 70, 229, 0.1);
+      color: var(--primary);
+    }
+
+    .card-btn:hover {
+      background-color: rgba(79, 70, 229, 0.2);
+    }
+
+    .card-btn i {
+      font-size: 0.8rem;
+    }
+
+    /* Card Colors */
+    .card-info {
+      border-left-color: var(--info);
+    }
+    .card-info .card-icon {
+      background-color: rgba(59, 130, 246, 0.1);
+      color: var(--info);
+    }
+
+    .card-success {
+      border-left-color: var(--success);
+    }
+    .card-success .card-icon {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    .card-warning {
+      border-left-color: var(--warning);
+    }
+    .card-warning .card-icon {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+
+    .card-secondary {
+      border-left-color: var(--secondary);
+    }
+    .card-secondary .card-icon {
+      background-color: rgba(108, 117, 125, 0.1);
+      color: var(--secondary);
+    }
+
+    .card-primary {
+      border-left-color: var(--primary);
+    }
+    .card-primary .card-icon {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: var(--primary);
+    }
+
+    .card-dark {
+      border-left-color: var(--text);
+    }
+    .card-dark .card-icon {
+      background-color: rgba(31, 41, 55, 0.1);
+      color: var(--text);
+    }
+
+    /* Stats Section */
+    .stats-section {
+      margin-top: 3rem;
+    }
+
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .stats-header h2 {
+      font-size: 1.5rem;
+      color: var(--text);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      .header h1 {
+        font-size: 1.75rem;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .user-controls {
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      nav {
+        padding: 1rem;
+      }
+
+      .logo {
+        font-size: 1.1rem;
+      }
+
+      .badge {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.65rem;
+      }
+
+      .logout-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+      }
+
+      .dashboard-card {
+        padding: 1.5rem;
+      }
+
+      .card-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#" class="logo">
+      <i class="fas fa-briefcase"></i>
+      <span>Prime Source ATS</span>
+    </a>
+    <div class="user-controls">
+      <span id="roleDisplay" class="badge admin-badge">ADMIN</span>
+      <a href="/logout" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="header">
+      <h1>Welcome to Your Dashboard</h1>
+      <p>Manage your recruitment process efficiently</p>
+    </div>
+
+    <div class="dashboard-grid" id="dashboardCards">
+      <!-- Cards will be added by JavaScript -->
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-header">
+        <h2><i class="fas fa-chart-line"></i> Quick Stats</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="activeJobsCount">0</div>
+          <div class="stat-label">Active Jobs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalCandidatesCount">0</div>
+          <div class="stat-label">Total Candidates</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">18</div>
+          <div class="stat-label">Interviews Today</div>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+  </div>
+
+  <script>
+    // User role management
+    const userRole = localStorage.getItem("userRole") || "ADMIN"; // or "RECRUITER"
+    const roleDisplay = document.getElementById("roleDisplay");
+    roleDisplay.innerText = userRole;
+    roleDisplay.className = userRole === 'ADMIN' ? 'badge admin-badge' : 'badge recruiter-badge';
+
+    // Dashboard cards configuration
+    const cardsContainer = document.getElementById("dashboardCards");
+
+    const commonCards = [
+      {
+        title: "Job Listings",
+        text: "View all available job postings and manage current openings.",
+        btn: "View Jobs",
+        link: "/jobs.html",
+        color: "info",
+        icon: "fa-briefcase"
+      },
+      {
+        title: "Candidates",
+        text: "Browse and manage candidates linked to your job postings.",
+        btn: "View Candidates",
+        link: "/candidate.html",
+        color: "success",
+        icon: "fa-users"
+      },
+      {
+        title: "Interview Tracker",
+        text: "Schedule, view and manage upcoming interviews.",
+        btn: "Track Interviews",
+        link: "/interviews.html",
+        color: "warning",
+        icon: "fa-calendar-check"
+      },
+      {
+        title: "Analytics",
+        text: "View detailed reports and recruitment metrics.",
+        btn: "View Analytics",
+        link: "/analytics.html",
+        color: "secondary",
+        icon: "fa-chart-bar"
+      }
+    ];
+
+    const adminCards = [
+      {
+        title: "Manage Jobs",
+        text: "Create, edit and publish new job postings.",
+        btn: "Manage Jobs",
+        link: "/admin/jobs.html",
+        color: "primary",
+        icon: "fa-edit"
+      },
+      {
+        title: "User Management",
+        text: "Manage recruiter accounts and permissions.",
+        btn: "Manage Users",
+        link: "/admin/users.html",
+        color: "dark",
+        icon: "fa-user-cog"
+      }
+    ];
+
+    // Render cards based on user role
+    const cardsToRender = [...commonCards, ...(userRole === "ADMIN" ? adminCards : [])];
+
+    cardsToRender.forEach(card => {
+      cardsContainer.innerHTML += `
+        <div class="dashboard-card card-${card.color}" onclick="window.location.href='${card.link}'">
+          <div class="card-icon">
+            <i class="fas ${card.icon}"></i>
+          </div>
+          <h3>${card.title}</h3>
+          <p>${card.text}</p>
+          <a href="${card.link}" class="card-btn">
+            ${card.btn}
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      `;
+    });
+    // Function to fetch and update stats
+   // Function to fetch and update stats
+async function fetchStats() {
+  try {
+    // Fetch active jobs count
+    const jobsResponse = await fetch('/jobs/counts', {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!jobsResponse.ok) {
+      throw new Error(`Failed to fetch jobs count: ${jobsResponse.status}`);
+    }
+    
+    const jobsCount = await jobsResponse.json();
+    document.getElementById('activeJobsCount').textContent = jobsCount;
+
+    // Fetch total candidates count
+    const candidatesResponse = await fetch('/api/candidates/count', {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!candidatesResponse.ok) {
+      throw new Error(`Failed to fetch candidates count: ${candidatesResponse.status}`);
+    }
+    
+    const candidatesCount = await candidatesResponse.json();
+    document.getElementById('totalCandidatesCount').textContent = candidatesCount;
+
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    showErrorState();
+  }
+}
+
+function showErrorState() {
+  document.getElementById('activeJobsCount').textContent = '--';
+  document.getElementById('totalCandidatesCount').textContent = '--';
+  
+  const statsHeader = document.querySelector('.stats-header h2');
+  if (statsHeader && !statsHeader.querySelector('.error-message')) {
+    const errorSpan = document.createElement('span');
+    errorSpan.className = 'error-message';
+    errorSpan.style.cssText = 'color: var(--danger); font-size: 0.8rem; margin-left: 1rem;';
+    errorSpan.textContent = 'Data unavailable';
+    statsHeader.appendChild(errorSpan);
+  }
+}
+
+// Initial fetch when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  fetchStats().catch(console.error);
+});
+
+// Refresh stats every 5 minutes
+const statsInterval = setInterval(fetchStats, 300000);
+
+// Clean up interval when page unloads
+window.addEventListener('beforeunload', () => {
+  clearInterval(statsInterval);
+});
+  </script>
+</body>
+</html>

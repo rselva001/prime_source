@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Candidate Management - Admin Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #6366f1;
+      --danger: #ef4444;
+      --danger-dark: #dc2626;
+      --success: #10b981;
+      --success-dark: #059669;
+      --warning: #f59e0b;
+      --warning-dark: #d97706;
+      --info: #3b82f6;
+      --info-dark: #2563eb;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      margin: 0; 
+      padding: 0;
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      z-index: 10;
+      animation: fadeInDown 0.6s ease-out;
+    }
+    
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .logo i {
+      font-size: 1.5rem;
+      transition: var(--transition);
+    }
+    
+    .logo:hover i {
+      transform: rotate(10deg);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    
+    .user-avatar:hover {
+      transform: scale(1.1);
+      background: rgba(255,255,255,0.3);
+    }
+    
+    main {
+      max-width: 1200px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+      margin-bottom: 1.75rem;
+      transition: var(--transition);
+      border: none;
+    }
+    
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      color: var(--primary);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    
+    h2 i {
+      font-size: 1.4rem;
+      color: var(--primary);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    
+    .form-group {
+      margin-bottom: 0;
+      position: relative;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+    
+    input[type="text"],
+    input[type="date"],
+    input[type="email"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: var(--transition);
+      background-color: #f8f9fa;
+    }
+    
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+      background-color: white;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      box-shadow: var(--shadow);
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 7px 14px rgba(79, 70, 229, 0.2), 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: var(--danger-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 7px 14px rgba(239, 68, 68, 0.2), 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-warning {
+      background: var(--warning);
+      color: white;
+    }
+    
+    .btn-warning:hover {
+      background: var(--warning-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 7px 14px rgba(245, 158, 11, 0.2), 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-info {
+      background: var(--info);
+      color: white;
+    }
+    
+    .btn-info:hover {
+      background: var(--info-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 7px 14px rgba(59, 130, 246, 0.2), 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-dark {
+      background: #1f2937;
+      color: white;
+    }
+    
+    .btn-dark:hover {
+      background: #111827;
+      transform: translateY(-2px);
+      box-shadow: 0 7px 14px rgba(17, 24, 39, 0.2), 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+    }
+    
+    .btn-icon {
+      padding: 0.5rem;
+      min-width: 36px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .filter-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .search-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    .search-container i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    
+    #searchInput, 
+    #emailFilter,
+    #phoneFilter,
+    #statusFilter,
+    #jobFilter {
+      padding-left: 2.75rem;
+      border-radius: 8px;
+      height: 46px;
+      font-size: 0.95rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 1.5rem;
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 0.9rem;
+      box-shadow: var(--shadow);
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      transition: var(--transition);
+    }
+    
+    th {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+    }
+    
+    tr:not(:first-child):hover {
+      background-color: rgba(79, 70, 229, 0.05);
+      transform: translateX(5px);
+    }
+    
+    .status-tag {
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    
+    .status-pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+    
+    .status-scheduled {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--info);
+    }
+    
+    .status-interviewed {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+    }
+    
+    .status-placed {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+    
+    .status-rejected {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-light);
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #e5e7eb;
+      transition: var(--transition);
+    }
+    
+    .empty-state:hover i {
+      transform: scale(1.1);
+    }
+    
+    .empty-state p {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+    
+    /* Toast notifications */
+    .toast-container {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 1000;
+      max-width: 350px;
+      animation: slideInRight 0.4s ease-out;
+    }
+    
+    .toast {
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+      color: white;
+      transition: var(--transition);
+      transform: translateX(0);
+    }
+    
+    .toast::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+    }
+    
+    .toast-success {
+      background: var(--success);
+    }
+    
+    .toast-success::before {
+      background: var(--success-dark);
+    }
+    
+    .toast-error {
+      background: var(--danger);
+    }
+    
+    .toast-error::before {
+      background: var(--danger-dark);
+    }
+    
+    .toast-warning {
+      background: var(--warning);
+    }
+    
+    .toast-warning::before {
+      background: var(--warning-dark);
+    }
+    
+    .toast-info {
+      background: var(--info);
+    }
+    
+    .toast-info::before {
+      background: var(--info-dark);
+    }
+    
+    .toast i {
+      font-size: 1.5rem;
+    }
+    
+    .toast-content h4 {
+      margin: 0 0 0.25rem;
+      font-weight: 600;
+    }
+    
+    .toast-content p {
+      margin: 0;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+      padding: 1rem;
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      padding: 2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transform: translateY(-20px);
+      transition: var(--transition);
+    }
+    
+    .modal.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: var(--transition);
+    }
+    
+    .modal-close:hover {
+      color: var(--danger);
+      transform: rotate(90deg);
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+      header {
+        padding: 1rem 2rem;
+      }
+      
+      .logo {
+        font-size: 1.5rem;
+        gap: 0.75rem;
+      }
+      
+      .user-info {
+        font-size: 1rem;
+        gap: 0.75rem;
+      }
+      
+      .user-avatar {
+        width: 42px;
+        height: 42px;
+      }
+      
+      main {
+        padding: 0 2rem;
+        margin: 2rem auto;
+      }
+      
+      .card {
+        padding: 1.75rem 2rem;
+        border-radius: 12px;
+      }
+      
+      h2 {
+        font-size: 1.6rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+      }
+      
+      .filter-container {
+        flex-direction: row;
+        gap: 1.5rem;
+      }
+      
+      .search-container {
+        width: auto;
+        flex: 1;
+      }
+      
+      table {
+        font-size: 0.95rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .action-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .btn-sm {
+        width: 100%;
+      }
+    }
+    
+    /* Assign Job Modal */
+    .assign-job-modal .modal-content {
+      max-width: 600px;
+    }
+
+    .assign-job-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .candidate-info, .job-selection {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      margin-bottom: 0.75rem;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .info-value {
+      color: var(--text);
+    }
+
+    .job-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .job-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .job-item:hover {
+      background-color: rgba(79, 70, 229, 0.05);
+    }
+
+    .job-item.selected {
+      background-color: rgba(79, 70, 229, 0.1);
+      border-left: 3px solid var(--primary);
+    }
+
+    .job-item h4 {
+      margin: 0 0 0.25rem;
+      color: var(--primary);
+    }
+
+    .job-item p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+      .assign-job-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    
+    
+    /* Copy Candidate Modal */
+    .copy-candidate-modal .modal-content {
+      max-width: 600px;
+    }
+
+    .copy-candidate-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .candidate-info, .job-selection {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      margin-bottom: 0.75rem;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .info-value {
+      color: var(--text);
+    }
+
+    .job-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .job-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .job-item:hover {
+      background-color: rgba(79, 70, 229, 0.05);
+    }
+
+    .job-item.selected {
+      background-color: rgba(79, 70, 229, 0.1);
+      border-left: 3px solid var(--primary);
+    }
+
+    .job-item h4 {
+      margin: 0 0 0.25rem;
+      color: var(--primary);
+    }
+
+    .job-item p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+
+    /* Responsive adjustments */
+    @media (min-width: 768px) {
+      .copy-candidate-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <i class="fas fa-users"></i>
+    <span>Candidate Management</span>
+  </div>
+  <div class="user-info">
+    <span>Admin</span>
+    <div class="user-avatar">
+      <i class="fas fa-user"></i>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2><i class="fas fa-search"></i> Candidate Listings</h2>
+    <div class="filter-container">
+      <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search by name..." />
+      </div>
+      <div class="search-container">
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="emailFilter" placeholder="Filter by email..." />
+      </div>
+      <div class="search-container">
+        <i class="fas fa-phone"></i>
+        <input type="tel" id="phoneFilter" placeholder="Filter by phone..." />
+      </div>
+      <div class="search-container">
+        <i class="fas fa-filter"></i>
+        <select id="statusFilter">
+          <option value="">All Statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="SCHEDULED">Scheduled</option>
+          <option value="INTERVIEWED">Interviewed</option>
+          <option value="PLACED">Placed</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+      <div class="search-container">
+        <i class="fas fa-briefcase"></i>
+        <input type="text" id="jobFilter" placeholder="Filter by job..." />
+      </div>
+    </div>
+    
+    <div id="candidatesTableContainer">
+      <table id="candidatesTable">
+        <thead>
+          <tr>
+            <th>Sno</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Job</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Candidates will be loaded here -->
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <i class="fas fa-users"></i>
+        <h3>No Candidates Found</h3>
+        <p>Try adjusting your search filters</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Toast Notification Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Edit Candidate Modal -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit"></i> Edit Candidate</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <form id="editForm">
+      <input type="hidden" id="editCandidateId">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="editName">Name</label>
+          <input type="text" id="editName" required>
+        </div>
+        <div class="form-group">
+          <label for="editEmail">Email</label>
+          <input type="email" id="editEmail" required>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="editPhone">Phone</label>
+          <input type="tel" id="editPhone" required>
+        </div>
+        <div class="form-group">
+          <label for="editStatus">Status</label>
+          <select id="editStatus" required>
+            <option value="PENDING">Pending</option>
+            <option value="SCHEDULED">Scheduled</option>
+            <option value="INTERVIEWED">Interviewed</option>
+            <option value="PLACED">Placed</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-warning modal-close">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Assign Job Modal -->
+<div class="modal assign-job-modal" id="assignJobModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-briefcase"></i> Assign Candidate to Job</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="assign-job-container">
+        <div class="candidate-info">
+          <h4>Candidate Information</h4>
+          <div class="info-row">
+            <div class="info-label">Name:</div>
+            <div class="info-value" id="assignCandidateName"></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Email:</div>
+            <div class="info-value" id="assignCandidateEmail"></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Phone:</div>
+            <div class="info-value" id="assignCandidatePhone"></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Current Job:</div>
+            <div class="info-value" id="assignCurrentJob"></div>
+          </div>
+        </div>
+        
+        <div class="job-selection">
+          <h4>Select a Job</h4>
+          <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="jobSearchInput" placeholder="Search jobs..." />
+          </div>
+          <div class="job-list" id="jobList">
+            <!-- Jobs will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-warning modal-close">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="button" class="btn btn-primary" id="assignJobBtn" disabled>
+        <i class="fas fa-link"></i> Assign to Job
+      </button>
+    </div>
+  </div>
+</div>
+<!-- Copy Candidate Modal -->
+<div class="modal copy-candidate-modal" id="copyCandidateModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-copy"></i> Copy Candidate to Job</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="copy-candidate-container">
+        <div class="candidate-info">
+          <h4>Candidate Information</h4>
+          <div class="info-row">
+            <div class="info-label">Name:</div>
+            <div class="info-value" id="copyCandidateName"></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Email:</div>
+            <div class="info-value" id="copyCandidateEmail"></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Phone:</div>
+            <div class="info-value" id="copyCandidatePhone"></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Current Job:</div>
+            <div class="info-value" id="copyCurrentJob"></div>
+          </div>
+        </div>
+        
+        <div class="job-selection">
+          <h4>Select Target Job</h4>
+          <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="copyJobSearchInput" placeholder="Search jobs..." />
+          </div>
+          <div class="job-list" id="copyJobList">
+            <!-- Jobs will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-warning modal-close">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="button" class="btn btn-primary" id="copyCandidateBtn" disabled>
+        <i class="fas fa-copy"></i> Copy to Job
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+  // DOM Elements
+  const candidatesTable = document.getElementById('candidatesTable');
+  const candidatesTableBody = candidatesTable.querySelector('tbody');
+  const searchInput = document.getElementById('searchInput');
+  const emailFilter = document.getElementById('emailFilter');
+  const phoneFilter = document.getElementById('phoneFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  const jobFilter = document.getElementById('jobFilter');
+  const emptyState = document.getElementById('emptyState');
+  const toastContainer = document.getElementById('toastContainer');
+  const editModal = document.getElementById('editModal');
+  const editForm = document.getElementById('editForm');
+  const modalCloseButtons = document.querySelectorAll('.modal-close');
+
+  // Show toast notification
+  function showToast(title, message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+      <i class="fas ${type === 'success' ? 'fa-check-circle' : 
+                       type === 'error' ? 'fa-exclamation-circle' : 
+                       type === 'warning' ? 'fa-exclamation-triangle' : 
+                       'fa-info-circle'}"></i>
+      <div class="toast-content">
+        <h4>${title}</h4>
+        <p>${message}</p>
+      </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Remove toast after animation
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100%)';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+
+  // Render candidates in table with animation
+  function renderCandidates(candidates) {
+    candidatesTableBody.innerHTML = '';
+    
+    if (!candidates || candidates.length === 0) {
+      candidatesTable.style.display = 'none';
+      emptyState.style.display = 'block';
+      return;
+    }
+    
+    emptyState.style.display = 'none';
+    candidatesTable.style.display = 'table';
+    
+    candidates.forEach((candidate, index) => {
+      const tr = document.createElement('tr');
+      tr.style.opacity = '0';
+      tr.style.transform = 'translateY(10px)';
+      tr.style.transition = `all 0.3s ease ${index * 0.05}s`;
+      
+      // Get status class based on candidate status
+      const statusClass = `status-${candidate.status.toLowerCase().replace('_', '-')}`;
+      
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${candidate.name || ''}</td>
+        <td>${candidate.email || ''}</td>
+        <td>${candidate.phone || ''}</td>
+        <td><span class="status-tag ${statusClass}">${candidate.status}</span></td>
+        <td>${candidate.job?.jobName || 'N/A'}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-info btn-sm btn-icon viewResumeBtn" data-id="${candidate.id}">
+              <i class="fas fa-file-pdf"></i>
+            </button>
+            <button class="btn btn-warning btn-sm btn-icon editBtn" data-id="${candidate.id}">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm btn-icon deleteBtn" data-id="${candidate.id}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      `;
+      
+      candidatesTableBody.appendChild(tr);
+      
+      setTimeout(() => {
+        tr.style.opacity = '1';
+        tr.style.transform = 'translateY(0)';
+      }, 10);
+    });
+  }
+
+  // Fetch candidates with error handling
+  async function fetchCandidates(url) {
+    try {
+      showToast('Loading', 'Fetching candidate data...', 'info');
+      const response = await fetch(url);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching candidates:', error);
+      showToast('Error', error.message || 'Failed to load candidates', 'error');
+      return null;
+    }
+  }
+
+  // Load candidates based on filters
+  async function loadCandidates() {
+    const searchTerm = searchInput.value.trim();
+    const emailTerm = emailFilter.value.trim();
+    const phoneTerm = phoneFilter.value.trim();
+    const statusTerm = statusFilter.value;
+    const jobTerm = jobFilter.value.trim();
+    
+    // Clear previous results while loading
+    candidatesTableBody.innerHTML = '';
+    candidatesTable.style.display = 'none';
+    emptyState.style.display = 'block';
+    emptyState.innerHTML = `
+      <i class="fas fa-spinner fa-spin"></i>
+      <h3>Loading candidates...</h3>
+    `;
+    
+    try {
+      let candidates = null;
+      
+      // Apply filters in priority order
+      if (searchTerm) {
+        candidates = await fetchCandidates(`/api/candidates/search/${encodeURIComponent(searchTerm)}`);
+      } else if (emailTerm) {
+        candidates = await fetchCandidates(`/api/candidates/email/${encodeURIComponent(emailTerm)}`);
+      } else if (phoneTerm) {
+        const candidate = await fetchCandidates(`/api/candidates/phone/${encodeURIComponent(phoneTerm)}`);
+        candidates = candidate ? [candidate] : [];
+      } else if (statusTerm) {
+        candidates = await fetchCandidates(`/api/candidates/status/${statusTerm}`);
+      } else if (jobTerm) {
+        candidates = await fetchCandidates(`/api/candidates/job/name/${encodeURIComponent(jobTerm)}`);
+      } else {
+        // No filters - get all candidates
+        candidates = await fetchCandidates('/api/candidates');
+      }
+      
+      if (candidates && candidates.length > 0) {
+        renderCandidates(candidates);
+      } else {
+        emptyState.innerHTML = `
+          <i class="fas fa-users"></i>
+          <h3>No Candidates Found</h3>
+          <p>Try adjusting your search filters</p>
+        `;
+      }
+    } catch (error) {
+      console.error('Error loading candidates:', error);
+      emptyState.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error Loading Data</h3>
+        <p>${error.message || 'Please try again later'}</p>
+      `;
+    }
+  }
+
+  // Initialize and set up event listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initial load
+    loadCandidates();
+    
+    // Search input handlers with debounce
+    let searchTimeout;
+    const handleSearch = () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(loadCandidates, 400);
+    };
+    
+    searchInput.addEventListener('input', handleSearch);
+    emailFilter.addEventListener('input', handleSearch);
+    phoneFilter.addEventListener('input', handleSearch);
+    statusFilter.addEventListener('change', handleSearch);
+    jobFilter.addEventListener('input', handleSearch);
+    
+    // Handle table actions (view/edit/delete)
+    candidatesTableBody.addEventListener('click', async (e) => {
+      const deleteBtn = e.target.closest('.deleteBtn');
+      const editBtn = e.target.closest('.editBtn');
+      const viewResumeBtn = e.target.closest('.viewResumeBtn');
+      
+      if (deleteBtn) {
+        const id = deleteBtn.getAttribute('data-id');
+        if (confirm(`Are you sure you want to delete candidate #${id}?`)) {
+          try {
+            const res = await fetch(`/api/candidates/${id}`, { method: 'DELETE' });
+            if (!res.ok) {
+              const errorData = await res.json().catch(() => ({}));
+              throw new Error(errorData.message || 'Failed to delete candidate');
+            }
+            showToast('Deleted', `Candidate #${id} has been deleted`, 'success');
+            loadCandidates();
+          } catch (e) {
+            showToast('Error', e.message, 'error');
+          }
+        }
+      }
+      
+      if (editBtn) {
+        const id = editBtn.getAttribute('data-id');
+        try {
+          const res = await fetch(`/api/candidates/${id}`);
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to fetch candidate details');
+          }
+          const candidate = await res.json();
+          
+          document.getElementById('editCandidateId').value = candidate.id;
+          document.getElementById('editName').value = candidate.name || '';
+          document.getElementById('editEmail').value = candidate.email || '';
+          document.getElementById('editPhone').value = candidate.phone || '';
+          document.getElementById('editStatus').value = candidate.status || 'PENDING';
+          
+          editModal.classList.add('active');
+        } catch (e) {
+          showToast('Error', e.message, 'error');
+        }
+      }
+      
+      if (viewResumeBtn) {
+        const id = viewResumeBtn.getAttribute('data-id');
+        window.open(`/api/candidates/view/${id}`, '_blank');
+      }
+    });
+
+    // Handle edit form submission
+    editForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('editCandidateId').value;
+      const name = document.getElementById('editName').value.trim();
+      const email = document.getElementById('editEmail').value.trim();
+      const phone = document.getElementById('editPhone').value.trim();
+      const status = document.getElementById('editStatus').value;
+
+      if (!name || !email || !phone) {
+        showToast('Validation Error', 'Please fill all required fields', 'error');
+        return;
+      }
+
+      const updatedCandidate = {
+        name,
+        email,
+        phone,
+        status
+      };
+
+      try {
+        const res = await fetch(`/api/candidates/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedCandidate)
+        });
+        
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to update candidate');
+        }
+        
+        showToast('Updated', `Candidate #${id} has been updated`, 'success');
+        editModal.classList.remove('active');
+        loadCandidates();
+      } catch (e) {
+        showToast('Error', e.message, 'error');
+      }
+    });
+
+    // Modal close handlers
+    modalCloseButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        editModal.classList.remove('active');
+      });
+    });
+
+    // Close modal when clicking outside
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) {
+        editModal.classList.remove('active');
+      }
+    });
+  });
+</script> </body>
+</html>
