@@ -31,6 +31,7 @@ public class Candidate {
     @Column(unique = true, nullable = false)
     private String phone;
     private LocalDate updatedAt;
+    
   
     @Lob
     @Column(name = "resume", columnDefinition = "LONGBLOB")

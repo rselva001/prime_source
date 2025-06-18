@@ -28,6 +28,7 @@ public class JobService {
         job.setJobName(jobDetails.getJobName());
         job.setJobLocation(jobDetails.getJobLocation());
         job.setSkillsname(jobDetails.getSkillsname());
+        job.setJobDiscription(jobDetails.getJobDiscription());
         return jobRepository.save(job);
     }
 

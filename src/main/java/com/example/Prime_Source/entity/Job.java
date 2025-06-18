@@ -25,6 +25,7 @@ public class Job {
     private String jobLocation;
     private LocalDate createdAt;
     private String skillsname;
+    private String jobDiscription;
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
@@ -70,6 +71,14 @@ public class Job {
 		this.skillsname = skillsname;
 	}
 
+	public String getJobDiscription() {
+		return jobDiscription;
+	}
+
+	public void setJobDiscription(String jobDiscription) {
+		this.jobDiscription = jobDiscription;
+	}
+
 	public List<Candidate> getCandidates() {
 		return candidates;
 	}
@@ -77,7 +86,6 @@ public class Job {
 	public void setCandidates(List<Candidate> candidates) {
 		this.candidates = candidates;
 	}
-
 
   
 }

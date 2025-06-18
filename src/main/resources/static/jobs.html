@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -161,7 +162,8 @@
     input[type="date"],
     input[type="email"],
     input[type="tel"],
-    select {
+    select,
+    textarea {
       width: 100%;
       padding: 0.75rem 1rem;
       font-size: 0.95rem;
@@ -171,11 +173,17 @@
       background-color: #f8f9fa;
     }
     
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
     input[type="text"]:focus,
     input[type="date"]:focus,
     input[type="email"]:focus,
     input[type="tel"]:focus,
-    select:focus {
+    select:focus,
+    textarea:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
@@ -544,6 +552,25 @@
       transform: rotate(90deg);
     }
     
+    .modal-body {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+    
+    .modal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .modal-body::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    
+    .modal-body::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 3px;
+    }
+    
     .modal-footer {
       display: flex;
       justify-content: flex-end;
@@ -561,7 +588,7 @@
     }
     
     #jobFormContainer.visible {
-      max-height: 500px;
+      max-height: 1000px;
     }
     
     .add-job-header {
@@ -794,6 +821,10 @@
           <label for="skills">Required Skills (comma separated)</label>
           <input type="text" id="skills" placeholder="e.g. Java, Spring Boot, SQL, AWS" required />
         </div>
+        <div class="form-group">
+          <label for="jobDescription">Job Description</label>
+          <textarea id="jobDescription" rows="4" placeholder="Enter detailed job description..." required></textarea>
+        </div>
         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
           <button type="submit" class="btn btn-primary">
             <i class="fas fa-save"></i> Save Job
@@ -831,7 +862,7 @@
             <th>Job Title</th>
             <th>Location</th>
             <th>Skills</th>
-            <th>Created</th>
+            <th>Job Submitted</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -853,6 +884,54 @@
 
 <!-- Toast Notification Container -->
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- Job Details Modal -->
+<div class="modal" id="jobDetailsModal">
+  <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-briefcase"></i> Job Details</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="candidate-details">
+        <div class="candidate-section">
+          <h4>Job Information</h4>
+          <div class="detail-row">
+            <div class="detail-label">Job Title:</div>
+            <div class="detail-value" id="detailJobTitle"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Location:</div>
+            <div class="detail-value" id="detailJobLocation"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Posted On:</div>
+            <div class="detail-value" id="detailPostedDate"></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Required Skills:</div>
+            <div class="detail-value" id="detailJobSkills"></div>
+          </div>
+        </div>
+        
+        <div class="candidate-section">
+          <h4>Job Description</h4>
+          <div class="detail-row" style="grid-template-columns: 1fr;">
+            <div class="detail-value" id="detailJobDescription" style="white-space: pre-line;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="viewCandidatesBtn">
+        <i class="fas fa-users"></i> View Candidates
+      </button>
+      <button type="button" class="btn btn-secondary modal-close">
+        <i class="fas fa-times"></i> Close
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Candidate List Modal -->
 <div class="modal" id="candidateListModal">
@@ -981,6 +1060,10 @@
         <label for="editSkills">Required Skills (comma separated)</label>
         <input type="text" id="editSkills" required>
       </div>
+      <div class="form-group">
+        <label for="editDescription">Job Description</label>
+        <textarea id="editDescription" rows="4" required></textarea>
+      </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-warning modal-close">
           <i class="fas fa-times"></i> Cancel
@@ -1046,552 +1129,606 @@
 
 <script>
   // DOM Elements
-  const jobForm = document.getElementById('jobForm');
-  const jobsTable = document.getElementById('jobsTable');
-  const jobsTableBody = jobsTable.querySelector('tbody');
-  const searchInput = document.getElementById('searchInput');
-  const locationFilter = document.getElementById('locationFilter');
-  const dateFilter = document.getElementById('dateFilter');
-  const emptyState = document.getElementById('emptyState');
-  const toastContainer = document.getElementById('toastContainer');
-  const editModal = document.getElementById('editModal');
-  const editForm = document.getElementById('editForm');
-  const candidateModal = document.getElementById('candidateModal');
-  const candidateForm = document.getElementById('candidateForm');
-  const candidateListModal = document.getElementById('candidateListModal');
-  const candidateDetailsModal = document.getElementById('candidateDetailsModal');
-  const modalCloseButtons = document.querySelectorAll('.modal-close');
-  const jobFormContainer = document.getElementById('jobFormContainer');
-  const toggleJobForm = document.getElementById('toggleJobForm');
-  const addJobBtn = document.getElementById('addJobBtn');
-  const emptyStateAddJobBtn = document.getElementById('emptyStateAddJobBtn');
-  const modalJobTitle = document.getElementById('modalJobTitle');
-  const candidatesTableBody = document.getElementById('candidatesTableBody');
-  const candidatesEmptyState = document.getElementById('candidatesEmptyState');
+ // DOM Elements
+const jobForm = document.getElementById('jobForm');
+const jobsTable = document.getElementById('jobsTable');
+const jobsTableBody = jobsTable.querySelector('tbody');
+const searchInput = document.getElementById('searchInput');
+const locationFilter = document.getElementById('locationFilter');
+const dateFilter = document.getElementById('dateFilter');
+const emptyState = document.getElementById('emptyState');
+const toastContainer = document.getElementById('toastContainer');
+const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editForm');
+const candidateModal = document.getElementById('candidateModal');
+const candidateForm = document.getElementById('candidateForm');
+const candidateListModal = document.getElementById('candidateListModal');
+const candidateDetailsModal = document.getElementById('candidateDetailsModal');
+const jobDetailsModal = document.getElementById('jobDetailsModal');
+const modalCloseButtons = document.querySelectorAll('.modal-close');
+const jobFormContainer = document.getElementById('jobFormContainer');
+const toggleJobForm = document.getElementById('toggleJobForm');
+const addJobBtn = document.getElementById('addJobBtn');
+const emptyStateAddJobBtn = document.getElementById('emptyStateAddJobBtn');
+const modalJobTitle = document.getElementById('modalJobTitle');
+const candidatesTableBody = document.getElementById('candidatesTableBody');
+const candidatesEmptyState = document.getElementById('candidatesEmptyState');
+const viewCandidatesBtn = document.getElementById('viewCandidatesBtn');
 
-  // Current candidate details for resume actions
-  let currentCandidateDetails = null;
+// Current candidate details for resume actions
+let currentCandidateDetails = null;
+let currentJobDetails = null;
 
-  // Toggle job form visibility
-  function toggleFormVisibility() {
-    jobFormContainer.classList.toggle('visible');
-    const isVisible = jobFormContainer.classList.contains('visible');
-    addJobBtn.innerHTML = isVisible 
-      ? '<i class="fas fa-minus"></i> Close Form' 
-      : '<i class="fas fa-plus"></i> New Job';
+// Toggle job form visibility
+function toggleFormVisibility() {
+  jobFormContainer.classList.toggle('visible');
+  const isVisible = jobFormContainer.classList.contains('visible');
+  addJobBtn.innerHTML = isVisible 
+    ? '<i class="fas fa-minus"></i> Close Form' 
+    : '<i class="fas fa-plus"></i> New Job';
+}
+
+// Show toast notification
+function showToast(title, message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <i class="fas ${type === 'success' ? 'fa-check-circle' : 
+                     type === 'error' ? 'fa-exclamation-circle' : 
+                     type === 'warning' ? 'fa-exclamation-triangle' : 
+                     'fa-info-circle'}"></i>
+    <div class="toast-content">
+      <h4>${title}</h4>
+      <p>${message}</p>
+    </div>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Remove toast after animation
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => toast.remove(), 300);
+  }, 5000);
+}
+
+// Render jobs in table with animation
+function renderJobs(jobs) {
+  jobsTableBody.innerHTML = '';
+  
+  if (!jobs || jobs.length === 0) {
+    jobsTable.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
   }
-
-  // Show toast notification
-  function showToast(title, message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.innerHTML = `
-      <i class="fas ${type === 'success' ? 'fa-check-circle' : 
-                       type === 'error' ? 'fa-exclamation-circle' : 
-                       type === 'warning' ? 'fa-exclamation-triangle' : 
-                       'fa-info-circle'}"></i>
-      <div class="toast-content">
-        <h4>${title}</h4>
-        <p>${message}</p>
-      </div>
+  
+  emptyState.style.display = 'none';
+  jobsTable.style.display = 'table';
+  
+  jobs.forEach((job, index) => {
+    const skillsDisplay = job.skillsname || 'No skills specified';
+    const createdAt = job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '';
+    
+    const tr = document.createElement('tr');
+    tr.style.opacity = '0';
+    tr.style.transform = 'translateY(10px)';
+    tr.style.transition = `all 0.3s ease ${index * 0.05}s`;
+    
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td>
+        <span class="job-title-link" data-id="${job.id}">${job.jobName || ''}</span>
+      </td>
+      <td>${job.jobLocation || ''}</td>
+      <td>
+        <div class="skills-tags">
+          ${skillsDisplay.split(',').map(skill => `
+            <span class="skill-tag">${skill.trim()}</span>
+          `).join('')}
+        </div>
+      </td>
+      <td>${createdAt}</td>
+      <td>
+        <div class="action-buttons">
+          <button class="btn btn-warning btn-sm btn-icon editBtn" data-id="${job.id}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-secondary btn-sm btn-icon candidateBtn" data-id="${job.id}">
+            <i class="fas fa-user-plus"></i>
+          </button>
+          <button class="btn btn-danger btn-sm btn-icon deleteBtn" data-id="${job.id}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
     `;
     
-    toastContainer.appendChild(toast);
+    jobsTableBody.appendChild(tr);
     
-    // Remove toast after animation
     setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(100%)';
-      setTimeout(() => toast.remove(), 300);
-    }, 5000);
-  }
+      tr.style.opacity = '1';
+      tr.style.transform = 'translateY(0)';
+    }, 10);
+  });
+}
 
-  // Render jobs in table with animation
-  function renderJobs(jobs) {
-    jobsTableBody.innerHTML = '';
+// Fetch jobs with error handling
+async function fetchJobs(url) {
+  try {
+    showToast('Loading', 'Fetching job data...', 'info');
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching jobs:', error);
+    showToast('Error', 'Failed to load jobs', 'error');
+    return null;
+  }
+}
+
+// Load jobs based on filters
+async function loadJobs() {
+  const searchTerm = searchInput.value.trim();
+  const locationTerm = locationFilter.value.trim();
+  const dateTerm = dateFilter.value;
+  
+  let jobs = [];
+  let url = '/jobs';
+  
+  if (dateTerm) {
+    url = `/jobs/date?createdAt=${dateTerm}`;
+    const dateJobs = await fetchJobs(url);
+    if (dateJobs) {
+      jobs = dateJobs;
+      
+      if (searchTerm || locationTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const locationLower = locationTerm.toLowerCase();
+        
+        jobs = jobs.filter(job => 
+          (!searchTerm || 
+           (job.jobName && job.jobName.toLowerCase().includes(searchLower)) ||
+           (job.skillsname && job.skillsname.toLowerCase().includes(searchLower))
+          ) &&
+          (!locationTerm || 
+           (job.jobLocation && job.jobLocation.toLowerCase().includes(locationLower)))
+        );
+      }
+    }
+  } else {
+    if (!searchTerm && !locationTerm) {
+      jobs = await fetchJobs(url);
+    } else if (!searchTerm && locationTerm) {
+      url = `/jobs/location/${encodeURIComponent(locationTerm)}`;
+      jobs = await fetchJobs(url);
+    } else if (searchTerm && !locationTerm) {
+      // Search by both name and skills
+      const nameJobs = await fetchJobs(`/jobs/search/${encodeURIComponent(searchTerm)}`);
+      const skillJobs = await fetchJobs(`/jobs/search/skill/${encodeURIComponent(searchTerm)}`);
+      
+      // Combine and deduplicate results
+      const combinedJobs = [...(nameJobs || []), ...(skillJobs || [])];
+      const uniqueJobs = combinedJobs.filter((job, index, self) =>
+        index === self.findIndex((j) => j.id === job.id)
+      );
+      jobs = uniqueJobs;
+    } else {
+      const locationJobs = await fetchJobs(`/jobs/location/${encodeURIComponent(locationTerm)}`);
+      if (locationJobs) {
+        const searchLower = searchTerm.toLowerCase();
+        jobs = locationJobs.filter(job => 
+          (job.jobName && job.jobName.toLowerCase().includes(searchLower)) ||
+          (job.skillsname && job.skillsname.toLowerCase().includes(searchLower))
+        );
+      }
+    }
+  }
+  
+  if (jobs) {
+    renderJobs(jobs);
+  }
+}
+
+// Load job details
+async function loadJobDetails(jobId) {
+  try {
+    const response = await fetch(`/jobs/${jobId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     
-    if (!jobs || jobs.length === 0) {
-      jobsTable.style.display = 'none';
-      emptyState.style.display = 'block';
+    const job = await response.json();
+    currentJobDetails = job;
+    
+    // Populate details in the modal
+    document.getElementById('detailJobTitle').textContent = job.jobName || 'N/A';
+    document.getElementById('detailJobLocation').textContent = job.jobLocation || 'N/A';
+    document.getElementById('detailJobSkills').textContent = job.skillsname || 'N/A';
+    document.getElementById('detailJobDescription').textContent = job.jobDiscription || 'No description provided';
+    
+    const postedDate = job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'N/A';
+    document.getElementById('detailPostedDate').textContent = postedDate;
+    
+    // Store current job ID for the view candidates button
+    viewCandidatesBtn.dataset.id = jobId;
+    viewCandidatesBtn.dataset.title = job.jobName || 'Job';
+    
+    jobDetailsModal.classList.add('active');
+  } catch (error) {
+    console.error('Error fetching job details:', error);
+    showToast('Error', 'Failed to load job details', 'error');
+  }
+}
+
+// Load candidates for a job
+async function loadCandidates(jobId, jobTitle) {
+  try {
+    modalJobTitle.textContent = jobTitle;
+    candidatesTableBody.innerHTML = '';
+    candidatesEmptyState.style.display = 'none';
+    
+    const response = await fetch(`/api/candidates/job/${jobId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const candidates = await response.json();
+    
+    if (candidates.length === 0) {
+      candidatesEmptyState.style.display = 'block';
       return;
     }
     
-    emptyState.style.display = 'none';
-    jobsTable.style.display = 'table';
-    
-    jobs.forEach((job, index) => {
-      const skillsDisplay = job.skillsname || 'No skills specified';
-      const createdAt = job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '';
-      
+    candidates.forEach((candidate, index) => {
       const tr = document.createElement('tr');
-      tr.style.opacity = '0';
-      tr.style.transform = 'translateY(10px)';
-      tr.style.transition = `all 0.3s ease ${index * 0.05}s`;
-      
       tr.innerHTML = `
-        <td>${index + 1}</td>
+        <td>${candidate.name || ''}</td>
+        <td>${candidate.email || ''}</td>
+        <td>${candidate.phone || ''}</td>
+        <td>${candidate.status || ''}</td>
         <td>
-          <span class="job-title-link" data-id="${job.id}">${job.jobName || ''}</span>
-        </td>
-        <td>${job.jobLocation || ''}</td>
-        <td>
-          <div class="skills-tags">
-            ${skillsDisplay.split(',').map(skill => `
-              <span class="skill-tag">${skill.trim()}</span>
-            `).join('')}
-          </div>
-        </td>
-        <td>${createdAt}</td>
-        <td>
-          <div class="action-buttons">
-            <button class="btn btn-warning btn-sm btn-icon editBtn" data-id="${job.id}">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-secondary btn-sm btn-icon candidateBtn" data-id="${job.id}">
-              <i class="fas fa-user-plus"></i>
-            </button>
-            <button class="btn btn-danger btn-sm btn-icon deleteBtn" data-id="${job.id}">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
+          <button class="btn btn-info btn-sm btn-icon viewCandidateBtn" data-id="${candidate.id}">
+            <i class="fas fa-eye"></i>
+          </button>
         </td>
       `;
-      
-      jobsTableBody.appendChild(tr);
-      
-      setTimeout(() => {
-        tr.style.opacity = '1';
-        tr.style.transform = 'translateY(0)';
-      }, 10);
+      candidatesTableBody.appendChild(tr);
     });
+    
+    candidateListModal.classList.add('active');
+  } catch (error) {
+    console.error('Error fetching candidates:', error);
+    showToast('Error', 'Failed to load candidates', 'error');
   }
+}
 
-  // Fetch jobs with error handling
-  async function fetchJobs(url) {
+// Load candidate details
+async function loadCandidateDetails(candidateId) {
+  try {
+    const response = await fetch(`/api/candidates/${candidateId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const candidate = await response.json();
+    currentCandidateDetails = candidate;
+    
+    // Populate details in the modal
+    document.getElementById('detailName').textContent = candidate.name || 'N/A';
+    document.getElementById('detailEmail').textContent = candidate.email || 'N/A';
+    document.getElementById('detailPhone').textContent = candidate.phone || 'N/A';
+    document.getElementById('detailStatus').textContent = candidate.status || 'N/A';
+    document.getElementById('detailJobTitle').textContent = candidate.job?.jobName || 'N/A';
+    document.getElementById('detailJobLocation').textContent = candidate.job?.jobLocation || 'N/A';
+    
+    const appliedDate = candidate.updatedAt ? new Date(candidate.updatedAt).toLocaleDateString() : 'N/A';
+    document.getElementById('detailAppliedDate').textContent = appliedDate;
+    
+    const hasResume = candidate.resumePdf && candidate.resumePdf.length > 0;
+    document.getElementById('detailResumeAvailable').textContent = hasResume ? 'Yes' : 'No';
+    
+    // Enable/disable resume buttons
+    document.getElementById('viewResumeBtn').disabled = !hasResume;
+    document.getElementById('downloadResumeBtn').disabled = !hasResume;
+    
+    candidateDetailsModal.classList.add('active');
+  } catch (error) {
+    console.error('Error fetching candidate details:', error);
+    showToast('Error', 'Failed to load candidate details', 'error');
+  }
+}
+
+// Initialize and set up event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  // Initial load
+  loadJobs();
+  
+  // Toggle job form
+  toggleJobForm.addEventListener('click', toggleFormVisibility);
+  addJobBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleFormVisibility();
+  });
+  emptyStateAddJobBtn.addEventListener('click', () => {
+    if (!jobFormContainer.classList.contains('visible')) {
+      toggleFormVisibility();
+    }
+    jobForm.scrollIntoView({ behavior: 'smooth' });
+  });
+  
+  // Search input handlers with debounce
+  let searchTimeout;
+  const handleSearch = () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(loadJobs, 400);
+  };
+  
+  searchInput.addEventListener('input', handleSearch);
+  locationFilter.addEventListener('input', handleSearch);
+  dateFilter.addEventListener('change', handleSearch);
+  
+  // Form submission
+  jobForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const jobName = document.getElementById('jobName').value.trim();
+    const jobLocation = document.getElementById('jobLocation').value.trim();
+    const skillsInput = document.getElementById('skills').value.trim();
+    const jobDescription = document.getElementById('jobDescription').value.trim();
+
+    if (!jobName || !jobLocation || !skillsInput || !jobDescription) {
+      showToast('Validation Error', 'Please fill all required fields', 'error');
+      return;
+    }
+
+    const newJob = {
+      jobName,
+      jobLocation,
+      skillsname: skillsInput,
+      jobDiscription: jobDescription
+    };
+
     try {
-      showToast('Loading', 'Fetching job data...', 'info');
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-      showToast('Error', 'Failed to load jobs', 'error');
-      return null;
-    }
-  }
-
-  // Load jobs based on filters
-  async function loadJobs() {
-    const searchTerm = searchInput.value.trim();
-    const locationTerm = locationFilter.value.trim();
-    const dateTerm = dateFilter.value;
-    
-    let jobs = [];
-    let url = '/jobs';
-    
-    if (dateTerm) {
-      url = `/jobs/date?createdAt=${dateTerm}`;
-      const dateJobs = await fetchJobs(url);
-      if (dateJobs) {
-        jobs = dateJobs;
-        
-        if (searchTerm || locationTerm) {
-          const searchLower = searchTerm.toLowerCase();
-          const locationLower = locationTerm.toLowerCase();
-          
-          jobs = jobs.filter(job => 
-            (!searchTerm || 
-             (job.jobName && job.jobName.toLowerCase().includes(searchLower)) ||
-             (job.skillsname && job.skillsname.toLowerCase().includes(searchLower))
-            ) &&
-            (!locationTerm || 
-             (job.jobLocation && job.jobLocation.toLowerCase().includes(locationLower)))
-          );
-        }
-      }
-    } else {
-      if (!searchTerm && !locationTerm) {
-        jobs = await fetchJobs(url);
-      } else if (!searchTerm && locationTerm) {
-        url = `/jobs/location/${encodeURIComponent(locationTerm)}`;
-        jobs = await fetchJobs(url);
-      } else if (searchTerm && !locationTerm) {
-        // Search by both name and skills
-        const nameJobs = await fetchJobs(`/jobs/search/${encodeURIComponent(searchTerm)}`);
-        const skillJobs = await fetchJobs(`/jobs/search/skill/${encodeURIComponent(searchTerm)}`);
-        
-        // Combine and deduplicate results
-        const combinedJobs = [...(nameJobs || []), ...(skillJobs || [])];
-        const uniqueJobs = combinedJobs.filter((job, index, self) =>
-          index === self.findIndex((j) => j.id === job.id)
-        );
-        jobs = uniqueJobs;
-      } else {
-        const locationJobs = await fetchJobs(`/jobs/location/${encodeURIComponent(locationTerm)}`);
-        if (locationJobs) {
-          const searchLower = searchTerm.toLowerCase();
-          jobs = locationJobs.filter(job => 
-            (job.jobName && job.jobName.toLowerCase().includes(searchLower)) ||
-            (job.skillsname && job.skillsname.toLowerCase().includes(searchLower))
-          );
-        }
-      }
-    }
-    
-    if (jobs) {
-      renderJobs(jobs);
-    }
-  }
-
-  // Load candidates for a job
-  async function loadCandidates(jobId, jobTitle) {
-    try {
-      modalJobTitle.textContent = jobTitle;
-      candidatesTableBody.innerHTML = '';
-      candidatesEmptyState.style.display = 'none';
-      
-      const response = await fetch(`/api/candidates/job/${jobId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const candidates = await response.json();
-      
-      if (candidates.length === 0) {
-        candidatesEmptyState.style.display = 'block';
-        return;
-      }
-      
-      candidates.forEach((candidate, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${candidate.name || ''}</td>
-          <td>${candidate.email || ''}</td>
-          <td>${candidate.phone || ''}</td>
-          <td>${candidate.status || ''}</td>
-          <td>
-            <button class="btn btn-info btn-sm btn-icon viewCandidateBtn" data-id="${candidate.id}">
-              <i class="fas fa-eye"></i>
-            </button>
-          </td>
-        `;
-        candidatesTableBody.appendChild(tr);
+      const res = await fetch('/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newJob)
       });
       
-      candidateListModal.classList.add('active');
-    } catch (error) {
-      console.error('Error fetching candidates:', error);
-      showToast('Error', 'Failed to load candidates', 'error');
-    }
-  }
-
-  // Load candidate details
-  async function loadCandidateDetails(candidateId) {
-    try {
-      const response = await fetch(`/api/candidates/${candidateId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || 'Failed to add job');
       }
       
-      const candidate = await response.json();
-      currentCandidateDetails = candidate;
+      showToast('Success', 'Job added successfully', 'success');
+      jobForm.reset();
+      loadJobs();
       
-      // Populate details in the modal
-      document.getElementById('detailName').textContent = candidate.name || 'N/A';
-      document.getElementById('detailEmail').textContent = candidate.email || 'N/A';
-      document.getElementById('detailPhone').textContent = candidate.phone || 'N/A';
-      document.getElementById('detailStatus').textContent = candidate.status || 'N/A';
-      document.getElementById('detailJobTitle').textContent = candidate.job?.jobName || 'N/A';
-      document.getElementById('detailJobLocation').textContent = candidate.job?.jobLocation || 'N/A';
-      
-      const appliedDate = candidate.updatedAt ? new Date(candidate.updatedAt).toLocaleDateString() : 'N/A';
-      document.getElementById('detailAppliedDate').textContent = appliedDate;
-      
-      const hasResume = candidate.resumePdf && candidate.resumePdf.length > 0;
-      document.getElementById('detailResumeAvailable').textContent = hasResume ? 'Yes' : 'No';
-      
-      // Enable/disable resume buttons
-      document.getElementById('viewResumeBtn').disabled = !hasResume;
-      document.getElementById('downloadResumeBtn').disabled = !hasResume;
-      
-      candidateDetailsModal.classList.add('active');
-    } catch (error) {
-      console.error('Error fetching candidate details:', error);
-      showToast('Error', 'Failed to load candidate details', 'error');
-    }
-  }
-
-  // Initialize and set up event listeners
-  document.addEventListener('DOMContentLoaded', () => {
-    // Initial load
-    loadJobs();
-    
-    // Toggle job form
-    toggleJobForm.addEventListener('click', toggleFormVisibility);
-    addJobBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleFormVisibility();
-    });
-    emptyStateAddJobBtn.addEventListener('click', () => {
-      if (!jobFormContainer.classList.contains('visible')) {
+      if (jobFormContainer.classList.contains('visible')) {
         toggleFormVisibility();
       }
-      jobForm.scrollIntoView({ behavior: 'smooth' });
-    });
+    } catch (e) {
+      showToast('Error', e.message, 'error');
+    }
+  });
+
+  // Handle table actions (edit/delete/candidate)
+  jobsTableBody.addEventListener('click', async (e) => {
+    const deleteBtn = e.target.closest('.deleteBtn');
+    const editBtn = e.target.closest('.editBtn');
+    const candidateBtn = e.target.closest('.candidateBtn');
+    const jobTitleLink = e.target.closest('.job-title-link');
     
-    // Search input handlers with debounce
-    let searchTimeout;
-    const handleSearch = () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(loadJobs, 400);
-    };
-    
-    searchInput.addEventListener('input', handleSearch);
-    locationFilter.addEventListener('input', handleSearch);
-    dateFilter.addEventListener('change', handleSearch);
-    
-    // Form submission
-    jobForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const jobName = document.getElementById('jobName').value.trim();
-      const jobLocation = document.getElementById('jobLocation').value.trim();
-      const skillsInput = document.getElementById('skills').value.trim();
-
-      if (!jobName || !jobLocation || !skillsInput) {
-        showToast('Validation Error', 'Please fill all required fields', 'error');
-        return;
-      }
-
-      const newJob = {
-        jobName,
-        jobLocation,
-        skillsname: skillsInput
-      };
-
-      try {
-        const res = await fetch('/jobs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newJob)
-        });
-        
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(err || 'Failed to add job');
-        }
-        
-        showToast('Success', 'Job added successfully', 'success');
-        jobForm.reset();
-        loadJobs();
-        
-        if (jobFormContainer.classList.contains('visible')) {
-          toggleFormVisibility();
-        }
-      } catch (e) {
-        showToast('Error', e.message, 'error');
-      }
-    });
-
-    // Handle table actions (edit/delete/candidate)
-    jobsTableBody.addEventListener('click', async (e) => {
-      const deleteBtn = e.target.closest('.deleteBtn');
-      const editBtn = e.target.closest('.editBtn');
-      const candidateBtn = e.target.closest('.candidateBtn');
-      const jobTitleLink = e.target.closest('.job-title-link');
-      
-      if (deleteBtn) {
-        const id = deleteBtn.getAttribute('data-id');
-        if (confirm(`Are you sure you want to delete job #${id}?`)) {
-          try {
-            const res = await fetch(`/jobs/${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed to delete job');
-            showToast('Deleted', `Job #${id} has been deleted`, 'success');
-            loadJobs();
-          } catch (e) {
-            showToast('Error', e.message, 'error');
-          }
-        }
-      }
-      
-      if (editBtn) {
-        const id = editBtn.getAttribute('data-id');
+    if (deleteBtn) {
+      const id = deleteBtn.getAttribute('data-id');
+      if (confirm(`Are you sure you want to delete job #${id}?`)) {
         try {
-          const res = await fetch(`/jobs/${id}`);
-          if (!res.ok) throw new Error('Failed to fetch job details');
-          const job = await res.json();
-          
-          document.getElementById('editJobId').value = job.id;
-          document.getElementById('editJobName').value = job.jobName || '';
-          document.getElementById('editJobLocation').value = job.jobLocation || '';
-          document.getElementById('editSkills').value = job.skillsname || '';
-          
-          editModal.classList.add('active');
+          const res = await fetch(`/jobs/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to delete job');
+          showToast('Deleted', `Job #${id} has been deleted`, 'success');
+          loadJobs();
         } catch (e) {
           showToast('Error', e.message, 'error');
         }
       }
-      
-      if (candidateBtn) {
-        const jobId = candidateBtn.getAttribute('data-id');
-        document.getElementById('candidateJobId').value = jobId;
-        candidateModal.classList.add('active');
-      }
-      
-      if (jobTitleLink) {
-        const jobId = jobTitleLink.getAttribute('data-id');
-        const jobTitle = jobTitleLink.textContent;
-        loadCandidates(jobId, jobTitle);
-      }
-    });
-
-    // Handle candidate list modal actions
-    candidatesTableBody.addEventListener('click', async (e) => {
-      const viewCandidateBtn = e.target.closest('.viewCandidateBtn');
-      if (viewCandidateBtn) {
-        const candidateId = viewCandidateBtn.getAttribute('data-id');
-        loadCandidateDetails(candidateId);
-      }
-    });
-
-    // Handle resume actions
-    document.getElementById('viewResumeBtn').addEventListener('click', () => {
-      if (currentCandidateDetails) {
-        window.open(`/api/candidates/view/${currentCandidateDetails.id}`, '_blank');
-      }
-    });
+    }
     
-    document.getElementById('downloadResumeBtn').addEventListener('click', () => {
-      if (currentCandidateDetails) {
-        window.open(`/api/candidates/download/${currentCandidateDetails.id}`, '_blank');
-      }
-    });
-
-    // Handle edit form submission
-    editForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const id = document.getElementById('editJobId').value;
-      const jobName = document.getElementById('editJobName').value.trim();
-      const jobLocation = document.getElementById('editJobLocation').value.trim();
-      const skillsInput = document.getElementById('editSkills').value.trim();
-
-      if (!jobName || !jobLocation || !skillsInput) {
-        showToast('Validation Error', 'Please fill all required fields', 'error');
-        return;
-      }
-
-      const updatedJob = {
-        jobName,
-        jobLocation,
-        skillsname: skillsInput
-      };
-
+    if (editBtn) {
+      const id = editBtn.getAttribute('data-id');
       try {
-        const res = await fetch(`/jobs/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedJob)
-        });
+        const res = await fetch(`/jobs/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch job details');
+        const job = await res.json();
         
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(err || 'Failed to update job');
-        }
+        document.getElementById('editJobId').value = job.id;
+        document.getElementById('editJobName').value = job.jobName || '';
+        document.getElementById('editJobLocation').value = job.jobLocation || '';
+        document.getElementById('editSkills').value = job.skillsname || '';
+        document.getElementById('editDescription').value = job.jobDiscription || '';
         
-        showToast('Updated', `Job #${id} has been updated`, 'success');
-        editModal.classList.remove('active');
-        loadJobs();
+        editModal.classList.add('active');
       } catch (e) {
         showToast('Error', e.message, 'error');
       }
-    });
+    }
+    
+    if (candidateBtn) {
+      const jobId = candidateBtn.getAttribute('data-id');
+      document.getElementById('candidateJobId').value = jobId;
+      candidateModal.classList.add('active');
+    }
+    
+    if (jobTitleLink) {
+      const jobId = jobTitleLink.getAttribute('data-id');
+      loadJobDetails(jobId);
+    }
+  });
 
-    // Handle candidate form submission
-    candidateForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const jobId = document.getElementById('candidateJobId').value;
-      const name = document.getElementById('candidateName').value.trim();
-      const email = document.getElementById('candidateEmail').value.trim();
-      const phone = document.getElementById('candidatePhone').value.trim();
-      const status = document.getElementById('candidateStatus').value;
-      const resumeFile = document.getElementById('candidateResume').files[0];
-      
-      if (!name || !email || !phone) {
-        showToast('Validation Error', 'Please fill all required fields', 'error');
-        return;
-      }
-      
-      const formData = new FormData();
-      formData.append('candidate', JSON.stringify({
-        name,
-        email,
-        phone,
-        status,
-        job: { id: jobId }
-      }));
-      
-      if (resumeFile) {
-        formData.append('resumeFile', resumeFile);
-      }
-      
-      try {
-        const res = await fetch('/api/candidates', {
-          method: 'POST',
-          body: formData
-        });
-        
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(err || 'Failed to add candidate');
-        }
-        
-        showToast('Success', 'Candidate added successfully', 'success');
-        candidateModal.classList.remove('active');
-        candidateForm.reset();
-      } catch (e) {
-        showToast('Error', e.message, 'error');
-      }
-    });
+  // Handle edit form submission
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('editJobId').value;
+    const jobName = document.getElementById('editJobName').value.trim();
+    const jobLocation = document.getElementById('editJobLocation').value.trim();
+    const skillsInput = document.getElementById('editSkills').value.trim();
+    const jobDescription = document.getElementById('editDescription').value.trim();
 
-    // Modal close handlers
-    modalCloseButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        editModal.classList.remove('active');
-        candidateModal.classList.remove('active');
-        candidateListModal.classList.remove('active');
-        candidateDetailsModal.classList.remove('active');
+    if (!jobName || !jobLocation || !skillsInput || !jobDescription) {
+      showToast('Validation Error', 'Please fill all required fields', 'error');
+      return;
+    }
+
+    const updatedJob = {
+      jobName,
+      jobLocation,
+      skillsname: skillsInput,
+      jobDiscription: jobDescription
+    };
+
+    try {
+      const res = await fetch(`/jobs/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedJob)
       });
-    });
+      
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || 'Failed to update job');
+      }
+      
+      showToast('Updated', `Job #${id} has been updated`, 'success');
+      editModal.classList.remove('active');
+      loadJobs();
+    } catch (e) {
+      showToast('Error', e.message, 'error');
+    }
+  });
 
-    // Close modals when clicking outside
-    editModal.addEventListener('click', (e) => {
-      if (e.target === editModal) {
-        editModal.classList.remove('active');
-      }
-    });
+  // Handle candidate form submission
+  candidateForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
     
-    candidateModal.addEventListener('click', (e) => {
-      if (e.target === candidateModal) {
-        candidateModal.classList.remove('active');
-      }
-    });
+    const jobId = document.getElementById('candidateJobId').value;
+    const name = document.getElementById('candidateName').value.trim();
+    const email = document.getElementById('candidateEmail').value.trim();
+    const phone = document.getElementById('candidatePhone').value.trim();
+    const status = document.getElementById('candidateStatus').value;
+    const resumeFile = document.getElementById('candidateResume').files[0];
     
-    candidateListModal.addEventListener('click', (e) => {
-      if (e.target === candidateListModal) {
-        candidateListModal.classList.remove('active');
-      }
-    });
+    if (!name || !email || !phone) {
+      showToast('Validation Error', 'Please fill all required fields', 'error');
+      return;
+    }
     
-    candidateDetailsModal.addEventListener('click', (e) => {
-      if (e.target === candidateDetailsModal) {
-        candidateDetailsModal.classList.remove('active');
+    const formData = new FormData();
+    formData.append('candidate', JSON.stringify({
+      name,
+      email,
+      phone,
+      status,
+      job: { id: jobId }
+    }));
+    
+    if (resumeFile) {
+      formData.append('resumeFile', resumeFile);
+    }
+    
+    try {
+      const res = await fetch('/api/candidates', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || 'Failed to add candidate');
       }
+      
+      showToast('Success', 'Candidate added successfully', 'success');
+      candidateModal.classList.remove('active');
+      candidateForm.reset();
+    } catch (e) {
+      showToast('Error', e.message, 'error');
+    }
+  });
+
+  // Handle candidate list modal actions
+  candidatesTableBody.addEventListener('click', async (e) => {
+    const viewCandidateBtn = e.target.closest('.viewCandidateBtn');
+    if (viewCandidateBtn) {
+      const candidateId = viewCandidateBtn.getAttribute('data-id');
+      loadCandidateDetails(candidateId);
+    }
+  });
+
+  // Handle view candidates button in job details modal
+  viewCandidatesBtn.addEventListener('click', function() {
+    const jobId = this.dataset.id;
+    const jobTitle = this.dataset.title;
+    jobDetailsModal.classList.remove('active');
+    loadCandidates(jobId, jobTitle);
+  });
+
+  // Handle resume actions
+  document.getElementById('viewResumeBtn').addEventListener('click', () => {
+    if (currentCandidateDetails) {
+      window.open(`/api/candidates/view/${currentCandidateDetails.id}`, '_blank');
+    }
+  });
+  
+  document.getElementById('downloadResumeBtn').addEventListener('click', () => {
+    if (currentCandidateDetails) {
+      window.open(`/api/candidates/download/${currentCandidateDetails.id}`, '_blank');
+    }
+  });
+
+  // Modal close handlers
+  modalCloseButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      editModal.classList.remove('active');
+      candidateModal.classList.remove('active');
+      candidateListModal.classList.remove('active');
+      candidateDetailsModal.classList.remove('active');
+      jobDetailsModal.classList.remove('active');
     });
   });
+
+  // Close modals when clicking outside
+  editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) {
+      editModal.classList.remove('active');
+    }
+  });
+  
+  candidateModal.addEventListener('click', (e) => {
+    if (e.target === candidateModal) {
+      candidateModal.classList.remove('active');
+    }
+  });
+  
+  candidateListModal.addEventListener('click', (e) => {
+    if (e.target === candidateListModal) {
+      candidateListModal.classList.remove('active');
+    }
+  });
+  
+  candidateDetailsModal.addEventListener('click', (e) => {
+    if (e.target === candidateDetailsModal) {
+      candidateDetailsModal.classList.remove('active');
+    }
+  });
+  
+  jobDetailsModal.addEventListener('click', (e) => {
+    if (e.target === jobDetailsModal) {
+      jobDetailsModal.classList.remove('active');
+    }
+  });
+});
 </script>
 
 </body>
