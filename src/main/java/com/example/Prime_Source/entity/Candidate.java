@@ -25,29 +25,34 @@ public class Candidate {
     private Long id;
 
     private String name;
-    @Column(unique = true)
+    
     private String email;
 
     @Column(unique = true, nullable = false)
     private String phone;
     private LocalDate updatedAt;
     
-  
+    private String experience;
+    private String noticePeriod;
+    private String currentCtc;
+    private String expectedCtc;
+    private String location;
+
     @Lob
     @Column(name = "resume", columnDefinition = "LONGBLOB")
     private byte[] resumePdf;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)  // Explicit length for enum string
+    @Column(length = 50)  // Explicit length for enum string
     private ResultStatus status;
+    
+    private String about;
 
     @ManyToOne(fetch = FetchType.EAGER)
 //    @JsonBackReference
     @JoinColumn(name = "job_id")
     private Job job;
-    
-    
-    
+
 	public Long getId() {
 		return id;
 	}
@@ -88,6 +93,46 @@ public class Candidate {
 		this.updatedAt = updatedAt;
 	}
 
+	public String getExperience() {
+		return experience;
+	}
+
+	public void setExperience(String experience) {
+		this.experience = experience;
+	}
+
+	public String getNoticePeriod() {
+		return noticePeriod;
+	}
+
+	public void setNoticePeriod(String noticePeriod) {
+		this.noticePeriod = noticePeriod;
+	}
+
+	public String getCurrentCtc() {
+		return currentCtc;
+	}
+
+	public void setCurrentCtc(String currentCtc) {
+		this.currentCtc = currentCtc;
+	}
+
+	public String getExpectedCtc() {
+		return expectedCtc;
+	}
+
+	public void setExpectedCtc(String expectedCtc) {
+		this.expectedCtc = expectedCtc;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
 	public byte[] getResumePdf() {
 		return resumePdf;
 	}
@@ -104,6 +149,14 @@ public class Candidate {
 		this.status = status;
 	}
 
+	public String getAbout() {
+		return about;
+	}
+
+	public void setAbout(String about) {
+		this.about = about;
+	}
+
 	public Job getJob() {
 		return job;
 	}
@@ -111,9 +164,11 @@ public class Candidate {
 	public void setJob(Job job) {
 		this.job = job;
 	}
-
-   
+    
+    
     // Getters and Setters
+
+	      
     
     
     

@@ -47,20 +47,50 @@ public class CandidateService {
     }
 
     // ✅ Update candidate
-    public Candidate updateCandidate(Long id, Candidate updatedCandidate) {
-        Candidate existingCandidate = candidateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Candidate not found"));
-
-        existingCandidate.setName(updatedCandidate.getName());
-        existingCandidate.setEmail(updatedCandidate.getEmail());
-        existingCandidate.setPhone(updatedCandidate.getPhone());
-        existingCandidate.setResumePdf(updatedCandidate.getResumePdf());
-        existingCandidate.setStatus(updatedCandidate.getStatus());
-        existingCandidate.setJob(updatedCandidate.getJob());
-
-        return candidateRepository.save(existingCandidate);
-    }
-    
+//    public Candidate updateCandidate(Long id, Candidate updatedCandidate) {
+//        Candidate existingCandidate = candidateRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Candidate not found"));
+//
+//        if (updatedCandidate.getName() != null)
+//            existingCandidate.setName(updatedCandidate.getName());
+//
+//        if (updatedCandidate.getEmail() != null)
+//            existingCandidate.setEmail(updatedCandidate.getEmail());
+//
+//        if (updatedCandidate.getPhone() != null)
+//            existingCandidate.setPhone(updatedCandidate.getPhone());
+//
+//        if (updatedCandidate.getResumePdf() != null)
+//            existingCandidate.setResumePdf(updatedCandidate.getResumePdf());
+//
+//        if (updatedCandidate.getStatus() != null)
+//            existingCandidate.setStatus(updatedCandidate.getStatus());
+//
+//        if (updatedCandidate.getAbout() != null)
+//            existingCandidate.setAbout(updatedCandidate.getAbout());
+//
+//        if (updatedCandidate.getExperience() != null)
+//            existingCandidate.setExperience(updatedCandidate.getExperience());
+//
+//        if (updatedCandidate.getExpectedCtc() != null)
+//            existingCandidate.setExpectedCtc(updatedCandidate.getExpectedCtc());
+//
+//        if (updatedCandidate.getLocation() != null)
+//            existingCandidate.setLocation(updatedCandidate.getLocation());
+//
+//        if (updatedCandidate.getNoticePeriod() != null)
+//            existingCandidate.setNoticePeriod(updatedCandidate.getNoticePeriod());
+//
+//        if (updatedCandidate.getCurrentCtc() != null)
+//            existingCandidate.setCurrentCtc(updatedCandidate.getCurrentCtc());
+//
+//        // If job needs to be updated (optional)
+//        // if (updatedCandidate.getJob() != null)
+//        //     existingCandidate.setJob(updatedCandidate.getJob());
+//
+//        return candidateRepository.save(existingCandidate);
+//    }
+//
     //get by job name
     public List<Candidate> getCandidatesByJobName(String jobName) {
         return candidateRepository.findByJob_JobName(jobName);
@@ -157,6 +187,44 @@ public class CandidateService {
         newCandidate.setResumePdf(existing.getResumePdf());
 
         return candidateRepository.save(newCandidate);
+    }
+    public Candidate updateCandidatePartial(
+            Long id,
+            String name,
+            String email,
+            String phone,
+            ResultStatus status,
+            String about,
+            String experience,
+            String noticePeriod,
+            String location,
+            String currentCtc,
+            String expectedCtc,
+            MultipartFile resumePdf
+    ) {
+        Candidate existing = candidateRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
+
+        if (name != null) existing.setName(name);
+        if (email != null) existing.setEmail(email);
+        if (phone != null) existing.setPhone(phone);
+        if (status != null) existing.setStatus(status);
+        if (about != null) existing.setAbout(about);
+        if (experience != null) existing.setExperience(experience);
+        if (noticePeriod != null) existing.setNoticePeriod(noticePeriod);
+        if (location != null) existing.setLocation(location);
+        if (currentCtc != null) existing.setCurrentCtc(currentCtc);
+        if (expectedCtc != null) existing.setExpectedCtc(expectedCtc);
+
+        if (resumePdf != null && !resumePdf.isEmpty()) {
+            try {
+                existing.setResumePdf(resumePdf.getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read resume PDF file", e);
+            }
+        }
+
+        return candidateRepository.save(existing);
     }
 
 

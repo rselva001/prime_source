@@ -1,27 +1,25 @@
 package com.example.Prime_Source.controller;
 
 import java.time.LocalDate;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.springframework.http.HttpStatus;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +30,10 @@ import com.example.Prime_Source.repository.CandidateRepository;
 import com.example.Prime_Source.service.CandidateService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/candidates")
 public class CandidateController {
@@ -81,14 +83,35 @@ public class CandidateController {
     }
 
 //    @PreAuthorize("hasRole('ADMIN')")
+   
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<Candidate> patchCandidate(@PathVariable Long id, @RequestBody Candidate updatedCandidate) {
+//        Candidate result = candidateService.updateCandidate(id, updatedCandidate);
+//        return ResponseEntity.ok(result);
+//    }
+    
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
-    public ResponseEntity<Candidate> updateCandidate(
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Candidate> patchCandidate(
             @PathVariable Long id,
-            @RequestBody Candidate updatedCandidate) {
-        Candidate candidate = candidateService.updateCandidate(id, updatedCandidate);
-        return ResponseEntity.ok(candidate);
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "status", required = false) ResultStatus status,
+            @RequestParam(value = "about", required = false) String about,
+            @RequestParam(value = "experience", required = false) String experience,
+            @RequestParam(value = "noticePeriod", required = false) String noticePeriod,
+            @RequestParam(value = "location", required = false) String location,
+            @RequestParam(value = "currentCtc", required = false) String currentCtc,
+            @RequestParam(value = "expectedCtc", required = false) String expectedCtc,
+            @RequestParam(value = "resumePdf", required = false) MultipartFile resumePdf
+    ) {
+        Candidate result = candidateService.updateCandidatePartial(
+            id, name, email, phone, status, about, experience, noticePeriod, location, currentCtc, expectedCtc, resumePdf
+        );
+        return ResponseEntity.ok(result);
     }
+
 
     
     // View PDF inline in browser
@@ -221,5 +244,15 @@ public class CandidateController {
         Candidate copiedCandidate = candidateService.copyCandidateToJob(candidateId, jobId);
         return new ResponseEntity<>(copiedCandidate, HttpStatus.CREATED);
     }
+    
+//    @GetMapping("/search/{term}")
+//    public ResponseEntity<List<Candidate>> searchCandidates(@PathVariable String term) {
+//        List<Candidate> results = candidateService.searchCandidates(term);
+//        if (results.isEmpty()) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.ok(results);
+//    }
+
 
 }

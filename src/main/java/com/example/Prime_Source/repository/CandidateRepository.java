@@ -33,5 +33,7 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
 //    @Query("SELECT c FROM Candidate c WHERE LOWER(c.job.jobName) LIKE LOWER(CONCAT('%', :jobName, '%'))")
 //    List<Candidate> findByJobName(String jobName);
     long count();
+    List<Candidate> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneContaining(
+    	    String name, String email, String phone);
 
 }
